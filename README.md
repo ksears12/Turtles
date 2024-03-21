@@ -59,7 +59,7 @@ For the old camera model (astra pro, Robot 1~6)
 ```
 ros2 launch tracking_control car_camera_pro_bringup_launch.py
 ```
-For the new camera model (astra pro plus, Robot 7~)
+For the new camera model (astra pro plus, Robot 7~). **Unplug and plug** the camera cable if you haven't do so after booting up the robot. The image of the camera cable location is in mini project 2 description.
 ```
 ros2 launch tracking_control car_camera_proplus_bringup_launch.py
 ```
