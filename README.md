@@ -1,6 +1,8 @@
 # S24_roboticsII
 ROS2 Workspace for S24 RoboticsII
 
+For robot issues, please refer to [this document](https://www.overleaf.com/read/jckcnqkwytvb#22a42e).
+
 ## Fork the repository
 
 Press the `Fork` on the page and fork the repo to your account. This will create a repository with exact same content in your github account.
@@ -16,6 +18,16 @@ git clone https://github.com/YOUR_ACCOUNT/S24_roboticsII_ws.git [team_name]_ws
 The step will build and ROS2 workspace and compile the packages.
 
 **Docker**: Open/access a docker container via a terminal (VNC or SSH)
+Run a docker container
+```
+./run_docker.sh
+```
+or access (execute) a running docker container
+```
+./exec_docker.sh
+```
+
+Then run this command to build your work space.
 ```
 cd ~/codes/[team_name]_ws
 colcon build
