@@ -56,8 +56,8 @@ def q2R(q):
 
 class ColorObjDetectionNode(Node):
     def __init__(self):
-        super().__init__('color_obj_detection_node')
-        self.get_logger().info('Color Object Detection Node Started')
+        super().__init__('color_goal_detection_node')
+        self.get_logger().info('Color Goal Detection Node Started')
         
         # Declare the parameters for the color detection
         self.declare_parameter('color_low', [110, 50, 150])
@@ -71,8 +71,8 @@ class ColorObjDetectionNode(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
         
         # Create publisher for the detected object and the bounding box
-        self.pub_detected_obj = self.create_publisher(Image, '/detected_color_object',10)
-        self.pub_detected_obj_pose = self.create_publisher(PoseStamped, '/detected_color_object_pose', 10)
+        self.pub_detected_obj = self.create_publisher(Image, '/detected_color_goal',10)
+        self.pub_detected_obj_pose = self.create_publisher(PoseStamped, '/detected_color_goal_pose', 10)
         # Create a subscriber to the RGB and Depth images
         self.sub_rgb = Subscriber(self, Image, '/camera/color/image_raw')
         self.sub_depth = Subscriber(self, PointCloud2, '/camera/depth/points')
@@ -102,7 +102,6 @@ class ColorObjDetectionNode(Node):
             x, y, w, h = cv2.boundingRect(largest_contour)
             # threshold by size
             if w * h < param_object_size_min:
-                self.get_logger().info("Object too small")
                 return
             # draw rectangle
             rgb_image=cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)

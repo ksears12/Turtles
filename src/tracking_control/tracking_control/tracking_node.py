@@ -66,7 +66,8 @@ class TrackingNode(Node):
         self.get_logger().info('Tracking Node Started')
         
         # Current object pose
-        self.obj_pose = None
+        self.obs_pose = None
+        self.goal_pose = None
         
         # ROS parameters
         self.declare_parameter('world_frame_id', 'odom')
@@ -78,12 +79,13 @@ class TrackingNode(Node):
         # Create publisher for the control command
         self.pub_control_cmd = self.create_publisher(Twist, '/track_cmd_vel', 10)
         # Create a subscriber to the detected object pose
-        self.sub_detected_obj_pose = self.create_subscription(PoseStamped, '/detected_color_object_pose', self.detected_obj_pose_callback, 10)
-    
+        self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_object_pose', self.detected_obs_pose_callback, 10)
+        self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
+
         # Create timer, running at 100Hz
         self.timer = self.create_timer(0.01, self.timer_update)
     
-    def detected_obj_pose_callback(self, msg):
+    def detected_obs_pose_callback(self, msg):
         #self.get_logger().info('Received Detected Object Pose')
         
         odom_id = self.get_parameter('world_frame_id').get_parameter_value().string_value
@@ -106,9 +108,34 @@ class TrackingNode(Node):
             return
         
         # Get the detected object pose in the world frame
-        self.obj_pose = cp_world
+        self.obs_pose = cp_world
+
+    def detected_goal_pose_callback(self, msg):
+        #self.get_logger().info('Received Detected Object Pose')
         
-    def get_current_object_pose(self):
+        odom_id = self.get_parameter('world_frame_id').get_parameter_value().string_value
+        center_points = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        
+        # TODO: Filtering
+        # You can decide to filter the detected object pose here
+        # For example, you can filter the pose based on the distance from the camera
+        # or the height of the object
+        # if np.linalg.norm(center_points) > 3 or center_points[2] > 0.7:
+        #     return
+        
+        try:
+            # Transform the center point from the camera frame to the world frame
+            transform = self.tf_buffer.lookup_transform(odom_id,msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.1))
+            t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
+            cp_world = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
+        except TransformException as e:
+            self.get_logger().error('Transform Error: {}'.format(e))
+            return
+        
+        # Get the detected object pose in the world frame
+        self.goal_pose = cp_world
+        
+    def get_current_poses(self):
         
         odom_id = self.get_parameter('world_frame_id').get_parameter_value().string_value
         # Get the current robot pose
@@ -119,13 +146,15 @@ class TrackingNode(Node):
             robot_world_y = transform.transform.translation.y
             robot_world_z = transform.transform.translation.z
             robot_world_R = q2R([transform.transform.rotation.w, transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z])
-            object_pose = robot_world_R@self.obj_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
-            
+            obstacle_pose = robot_world_R@self.obs_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+            goal_pose = robot_world_R@self.goal_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+    
+        
         except TransformException as e:
             self.get_logger().error('Transform error: ' + str(e))
             return
         
-        return object_pose
+        return obstacle_pose, goal_pose
     
     def timer_update(self):
         ################### Write your code here ###################
@@ -133,7 +162,7 @@ class TrackingNode(Node):
         # Now, the robot stops if the object is not detected
         # But, you may want to think about what to do in this case
         # and update the command velocity accordingly
-        if self.obj_pose is None:
+        if self.goal_pose is None:
             cmd_vel = Twist()
             cmd_vel.linear.x = 0.0
             cmd_vel.angular.z = 0.0
@@ -141,7 +170,7 @@ class TrackingNode(Node):
             return
         
         # Get the current object pose in the robot base_footprint frame
-        current_object_pose = self.get_current_object_pose()
+        current_obs_pose, current_goal_pose = self.get_current_poses()
         
         # TODO: get the control velocity command
         cmd_vel = self.controller()

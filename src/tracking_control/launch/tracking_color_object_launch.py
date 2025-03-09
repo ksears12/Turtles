@@ -1,9 +1,5 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node 
-# 参数声明与获取
-# from launch.actions import DeclareLaunchArgument
-# from launch.substitutions import LaunchConfiguration
-# 文件包含相关
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 import os
@@ -19,8 +15,22 @@ def generate_launch_description():
         package=object_detection_pkg,
         executable='color_obj_detection',
         name='color_obj_detection_node',
+        parameters=[
+            {'color_low': [120, 40, 0]},{'color_high': [255, 255, 70]}, {'object_size_min':200}
+        ],
         output="screen"
     )
+
+    goal_detection_node = Node(
+        package=object_detection_pkg,
+        executable='color_goal_detection',
+        name='color_goal_detection_node',
+        parameters=[
+            {'color_low': [0, 0, 120]},{'color_high': [70, 70, 255]}, {'object_size_min':200}
+        ],
+        output="screen"
+    )
+
     tracking_control_node = Node(
         package=tracking_pkg,
         executable='tracking_node',
@@ -30,5 +40,6 @@ def generate_launch_description():
     
     return LaunchDescription([
         obj_detection_node,
+        goal_detection_node,
         tracking_control_node
     ])

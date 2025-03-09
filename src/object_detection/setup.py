@@ -21,6 +21,7 @@ setup(
     entry_points={
         'console_scripts': [
             'color_obj_detection = object_detection.color_obj_detection:main',
+            'color_goal_detection = object_detection.color_goal_detection:main',
             'fake_obj_pose = object_detection.fake_object:main',
         ],
     },
