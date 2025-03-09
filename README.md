@@ -1,21 +1,21 @@
 # S24_roboticsII
-ROS2 Workspace for S24 RoboticsII
-
-For robot issues, please refer to [this document](https://www.overleaf.com/read/jckcnqkwytvb#22a42e).
+ROS2 Workspace for S25 RoboticsII
 
 ## Fork the repository
 
 Press the `Fork` on the page and fork the repo to your account. This will create a repository with exact same content in your github account.
 
 ## Cloning the repository 
-On the robot, open a new terminal (via VNC or SSH)
+On your machine, open a new terminal (via VNC or SSH)
 ```
 cd ~/codes
-git clone https://github.com/YOUR_ACCOUNT/S24_roboticsII_ws.git [team_name]_ws
+git clone https://github.com/YOUR_ACCOUNT/S25_roboticsII_ws.git [team_name]_ws
 ```
 
+**Please see the instructions in the lab assignment document for full instructions on how to run this code and how to keep the files on the robot updated.** 
+
 ## Building the ROS2 workspace
-The step will build and ROS2 workspace and compile the packages.
+The step will build and ROS2 workspace and compile the packages after successfully moving this workspace to the robot.
 
 **Docker**: Open/access a docker container via a terminal (VNC or SSH)
 Run a docker container
@@ -71,7 +71,7 @@ For the old camera model (astra pro, Robot 1~6)
 ```
 ros2 launch tracking_control car_camera_pro_bringup_launch.py
 ```
-For the new camera model (astra pro plus, Robot 7~). **Unplug and plug** the camera cable if you haven't do so after booting up the robot. The image of the camera cable location is in mini project 2 description.
+For the new camera model (astra pro plus, Robot 7~). **Unplug and plug** the camera cable if you haven't do so after booting up the robot. The image of the camera cable location is in Lab Assignmnet 1 description.
 ```
 ros2 launch tracking_control car_camera_proplus_bringup_launch.py
 ```
