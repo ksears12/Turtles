@@ -186,6 +186,11 @@ class TrackingNode(Node):
         ########### Write your code here ###########
         
         # TODO: Update the control velocity command
+        # Edit on 10MAR2025 By Marilla - Sudo code in lines below
+        # Have proportional controller to object in x direction
+        # Implement something tangent to object in y or z direction - can move around object while still moving toward goal
+        # Need current robot position, goal position, and obstacle position(s)
+        # Use equation from lecture 12 slide 20
         cmd_vel = Twist()
         cmd_vel.linear.x = 0
         cmd_vel.linear.y = 0
