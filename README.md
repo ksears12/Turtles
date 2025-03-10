@@ -6,7 +6,7 @@ ROS2 Workspace for S25 RoboticsII
 Press the `Fork` on the page and fork the repo to your account. This will create a repository with exact same content in your github account.
 
 ## Cloning the repository 
-On your machine, open a new terminal (via VNC or SSH)
+On your machine, open a new terminal.
 ```
 cd ~/codes
 git clone https://github.com/YOUR_ACCOUNT/S25_roboticsII_ws.git [team_name]_ws
