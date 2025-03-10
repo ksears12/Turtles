@@ -1,5 +1,10 @@
 # S25_roboticsII Turtles
-ROS2 Workspace for S25 RoboticsII 
+ROS2 Workspace for S25 RoboticsII
+Marilla Bongiovanni
+Jaiden Lemm
+Katherine Sears
+Thea Steinbach
+
 
 ## Fork the repository
 
