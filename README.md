@@ -57,7 +57,10 @@ The reason you don't need to do this while doing previous mini project is that t
 cd ~/codes/[team_name]_ws
 source install/setup.bash
 ```
-
+## Launch Vehicle Motors
+```
+ros2 run yahboomcar_bringup Mcnamu_driver_X3
+```
 ## Launch tracking nodes!
 
 ### Color Detection and Tracking Node
