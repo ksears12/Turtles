@@ -191,6 +191,20 @@ class TrackingNode(Node):
         # Implement something tangent to object in y or z direction - can move around object while still moving toward goal
         # Need current robot position, goal position, and obstacle position(s)
         # Use equation from lecture 12 slide 20
+
+        current_obs_pose, current_goal_pose = self.get_current_poses()
+    	u_x_rep = 0
+    	u_y_rep = 0
+    	q_star = 5 #Check units
+    	obj_dist = sqrt((robot_world_x - current_obs_pose[0])**2 + (robot_world_y - current_obs_pose[1])**2)
+    	
+    	if obj_dist < q_star:
+    		k_rep = 1
+    		grad_dist_x =  (robot_world_x - current_obs_pose[0])/ obj_dist
+    		grad_dist_y = (robot_world_y - current_obs_pose[1])/ obj_dist
+    		u_x_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_x
+    		u_y_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
+
         cmd_vel = Twist()
         cmd_vel.linear.x = 0
         cmd_vel.linear.y = 0
