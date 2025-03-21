@@ -60,7 +60,7 @@ class ColorObjDetectionNode(Node):
         self.get_logger().info('Color Object Detection Node Started')
         
         # Declare the parameters for the color detection
-        self.declare_parameter('color_low', [110, 50, 150])
+        self.declare_parameter('color_low', [0, 50, 150])
         self.declare_parameter('color_high', [130, 255, 255])
         self.declare_parameter('object_size_min', 1000)
         # Used to convert between ROS and OpenCV images
@@ -82,7 +82,7 @@ class ColorObjDetectionNode(Node):
         self.ts.registerCallback(self.camera_callback)
 
     def camera_callback(self, rgb_msg, points_msg):
-        #self.get_logger().info('Received RGB and Depth Messages')
+        self.get_logger().info('Received RGB and Depth Messages')
         # get ROS parameters
         param_color_low = np.array(self.get_parameter('color_low').value)
         param_color_high = np.array(self.get_parameter('color_high').value)
@@ -109,6 +109,7 @@ class ColorObjDetectionNode(Node):
             center_x = int(x + w / 2)
             center_y = int(y + h / 2)
         else:
+            self.get_logger().info('No Contours')
             return
         # get the location of the detected object using point cloud
         pointid = (center_y*points_msg.row_step) + (center_x*points_msg.point_step)
