@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 import struct
 import sys
+import matplotlib.pyplot as plt
 
 ## Functions for quaternion and rotation matrix conversion
 ## The code is adapted from the general_robotics_toolbox package
@@ -72,6 +73,7 @@ class ColorObjDetectionNode(Node):
         
         # Create publisher for the detected object and the bounding box
         self.pub_detected_obj = self.create_publisher(Image, '/detected_color_object',10)
+        self.pub_detected_obj2 = self.create_publisher(Image, '/detected_color_object_map',10)
         self.pub_detected_obj_pose = self.create_publisher(PoseStamped, '/detected_color_object_pose', 10)
         # Create a subscriber to the RGB and Depth images
         self.sub_rgb = Subscriber(self, Image, '/camera/color/image_raw')
@@ -87,9 +89,15 @@ class ColorObjDetectionNode(Node):
         param_color_low = np.array(self.get_parameter('color_low').value)
         param_color_high = np.array(self.get_parameter('color_high').value)
         param_object_size_min = self.get_parameter('object_size_min').value
-        
+
+        self.get_logger().info('Color Low: {}'.format(param_color_low))
+        self.get_logger().info('Color High: {}'.format(param_color_high))
+
         # Convert the ROS image message to a numpy array
         rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+        plt.imshow(rgb_image)
+        plt.savefig('rgb_image_obj.png')
+        plt.close()
         # to hsv
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
         
@@ -142,6 +150,21 @@ class ColorObjDetectionNode(Node):
         detect_img_msg.header = rgb_msg.header
         self.get_logger().info('image message published')
         self.pub_detected_obj.publish(detect_img_msg)
+        detect_img_msg = self.br.cv2_to_imgmsg(color_mask, encoding='8UC1')
+        detect_img_msg.header = rgb_msg.header
+        self.get_logger().info('image message published')
+        self.pub_detected_obj2.publish(detect_img_msg)
+
+        plt.imshow(hsv_image)
+        plt.savefig('hsv_image_obj.png')
+        plt.close()
+        plt.imshow(color_mask)
+        plt.savefig('color_mask_obj.png')
+        plt.close()
+        plt.imshow(rgb_image)
+        plt.savefig('rgb_image2_obj.png')
+        plt.close()
+        
         
 def main(args=None):
     # Initialize the rclpy library

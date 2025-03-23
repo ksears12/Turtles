@@ -6,6 +6,7 @@ from sensor_msgs.msg import Image, PointCloud2
 from geometry_msgs.msg import PoseStamped
 from tf2_ros import TransformException, Buffer, TransformListener
 from cv_bridge import CvBridge
+import matplotlib.pyplot as plt
 import cv2
 import numpy as np
 import struct
@@ -94,6 +95,9 @@ class ColorObjDetectionNode(Node):
 
         # Convert the ROS image message to a numpy array
         rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+        plt.imshow(rgb_image)
+        plt.savefig('rgb_image_goal.png')
+        plt.close()
         # to hsv
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
         
@@ -149,6 +153,17 @@ class ColorObjDetectionNode(Node):
         detect_img_msg.header = rgb_msg.header
         self.get_logger().info('image message published')
         self.pub_detected_obj2.publish(detect_img_msg)
+
+        
+        plt.imshow(hsv_image)
+        plt.savefig('hsv_image_goal.png')
+        plt.close()
+        plt.imshow(color_mask)
+        plt.savefig('color_mask_goal.png')
+        plt.close()
+        plt.imshow(rgb_image)
+        plt.savefig('rgb_image2_goal.png')
+        plt.close()
         
 def main(args=None):
     # Initialize the rclpy library
