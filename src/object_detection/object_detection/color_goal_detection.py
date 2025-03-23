@@ -72,6 +72,7 @@ class ColorObjDetectionNode(Node):
         
         # Create publisher for the detected object and the bounding box
         self.pub_detected_obj = self.create_publisher(Image, '/detected_color_goal',10)
+        self.pub_detected_obj2 = self.create_publisher(Image, '/detected_color_goal_map',10)
         self.pub_detected_obj_pose = self.create_publisher(PoseStamped, '/detected_color_goal_pose', 10)
         # Create a subscriber to the RGB and Depth images
         self.sub_rgb = Subscriber(self, Image, '/camera/color/image_raw')
@@ -88,6 +89,9 @@ class ColorObjDetectionNode(Node):
         param_color_high = np.array(self.get_parameter('color_high').value)
         param_object_size_min = self.get_parameter('object_size_min').value
         
+        self.get_logger().info('Color Low: {}'.format(param_color_low))
+        self.get_logger().info('Color High: {}'.format(param_color_high))
+
         # Convert the ROS image message to a numpy array
         rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
         # to hsv
@@ -141,6 +145,10 @@ class ColorObjDetectionNode(Node):
         detect_img_msg.header = rgb_msg.header
         self.get_logger().info('image message published')
         self.pub_detected_obj.publish(detect_img_msg)
+        detect_img_msg = self.br.cv2_to_imgmsg(color_mask, encoding='bgr8')
+        detect_img_msg.header = rgb_msg.header
+        self.get_logger().info('image message published')
+        self.pub_detected_obj2.publish(detect_img_msg)
         
 def main(args=None):
     # Initialize the rclpy library
