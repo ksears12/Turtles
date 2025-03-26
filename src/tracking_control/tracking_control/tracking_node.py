@@ -193,28 +193,38 @@ class TrackingNode(Node):
         # Use equation from lecture 12 slide 20
 
         current_obs_pose, current_goal_pose = self.get_current_poses()
-        u_x_rep = 0
-        u_y_rep = 0
         
-        k_rep = 1
+        k_rep = 10
         k_att = 1
         k_turn = 1
         
-        q_star = 1 #Check units
+        q_star = 0.5 #Check units
         obj_dist = math.sqrt(current_obs_pose[0])**2 + (current_obs_pose[1])**2)
+        goal_dist = math.sqrt(current_goal_pose[0])**2 + (current_goal_pose[1])**2)
         
+        # Repulsive field
         if obj_dist < q_star:
             grad_dist_x =  current_obs_pose[0]/ obj_dist
             grad_dist_y = current_obs_pose[1]/ obj_dist
-            u_x_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_x
-            u_y_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
-            
-        u_x_att = k_att*current_goal_pose[0]
+            u_x_rep = k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_x
+            u_y_rep = k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
+        else:
+            u_x_rep = 0
+            u_y_rep = 0
+        
+        # Attractive field in x direction (drive straight forward to goal
+        if goal_dist > 0.3:
+            u_x_att = k_att*current_goal_pose[0]
+        else:
+            u_x_att = 0
+        
+        # Turn towards goal
+        u_z_att = -k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
         cmd_vel.linear.x = 0
         cmd_vel.linear.y = 0
-        cmd_vel.angular.z = -k_turn*current_goal_pose[1]
+        cmd_vel.angular.z = u_z_att
         return cmd_vel
     
         ############################################
