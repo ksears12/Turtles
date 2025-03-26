@@ -195,21 +195,26 @@ class TrackingNode(Node):
         current_obs_pose, current_goal_pose = self.get_current_poses()
         u_x_rep = 0
         u_y_rep = 0
-        q_star = 5 #Check units
-        robot_world_x, robot_world_y = 0,0 #Error Fix Line
-        obj_dist = math.sqrt((robot_world_x - current_obs_pose[0])**2 + (robot_world_y - current_obs_pose[1])**2)
+        
+        k_rep = 1
+        k_att = 1
+        k_turn = 1
+        
+        q_star = 1 #Check units
+        obj_dist = math.sqrt(current_obs_pose[0])**2 + (current_obs_pose[1])**2)
         
         if obj_dist < q_star:
-            k_rep = 1
-            grad_dist_x =  (robot_world_x - current_obs_pose[0])/ obj_dist
-            grad_dist_y = (robot_world_y - current_obs_pose[1])/ obj_dist
+            grad_dist_x =  current_obs_pose[0]/ obj_dist
+            grad_dist_y = current_obs_pose[1]/ obj_dist
             u_x_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_x
             u_y_rep = 1/2*k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
+            
+        u_x_att = k_att*current_goal_pose[0]
 
         cmd_vel = Twist()
         cmd_vel.linear.x = 0
         cmd_vel.linear.y = 0
-        cmd_vel.angular.z = 0
+        cmd_vel.angular.z = -k_turn*current_goal_pose[1]
         return cmd_vel
     
         ############################################
