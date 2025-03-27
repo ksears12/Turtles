@@ -66,8 +66,8 @@ class TrackingNode(Node):
         self.get_logger().info('Tracking Node Started')
         
         # Current object pose
-        self.obs_pose = 5
-        self.goal_pose = 5
+        self.obs_pose = np.array([0,0,0])
+        self.goal_pose = np.array([0,0,0])
         
         # ROS parameters
         self.declare_parameter('world_frame_id', 'odom')
