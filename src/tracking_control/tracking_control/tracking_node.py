@@ -235,7 +235,7 @@ class TrackingNode(Node):
             u_x_att = 0.0
         
         # Turn towards goal
-        u_z_att = -k_turn*current_goal_pose[1]
+        u_z_att = k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
         cmd_vel.linear.x = u_x_att
