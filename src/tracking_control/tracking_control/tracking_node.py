@@ -146,8 +146,21 @@ class TrackingNode(Node):
             robot_world_y = transform.transform.translation.y
             robot_world_z = transform.transform.translation.z
             robot_world_R = q2R([transform.transform.rotation.w, transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z])
-            obstacle_pose = robot_world_R@self.obs_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
-            goal_pose = robot_world_R@self.goal_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+            if not np.isscalar(self.obs_pose) and self.obs_pose.size == robot_world_R.shape[-1]:    
+                obstacle_pose = robot_world_R@self.obs_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+            else:
+                self.get_logger().info('Transform Error Obj: {}'.format(np.isscalar(self.obs_pose)))
+                self.get_logger().info('Transform Error Obj: {}'.format(np.isscalar(self.obs_pose.size)))
+                self.get_logger().info('Transform Error Obj: {}'.format(np.isscalar(robot_world_R.shape[-1])))
+                obstacle_pose = np.array([robot_world_x*2,robot_world_y,robot_world_z])
+            if not np.isscalar(self.goal_pose) and self.goal_pose.size == robot_world_R.shape[-1]:
+                goal_pose = robot_world_R@self.goal_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+            else:
+                self.get_logger().info('Transform Error Goal: {}'.format(np.isscalar(self.goal_pose)))
+                self.get_logger().info('Transform Error Goal: {}'.format(np.isscalar(self.goal_pose.size)))
+                self.get_logger().info('Transform Error Goal: {}'.format(np.isscalar(robot_world_R.shape[-1])))
+                goal_pose = np.array([robot_world_x,robot_world_y*2,robot_world_z])
+
     
         
         except TransformException as e:
