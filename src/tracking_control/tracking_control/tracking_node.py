@@ -211,10 +211,10 @@ class TrackingNode(Node):
         # self.get_logger().info('Transform Goal: {}'.format(current_obs_pose))
         # self.get_logger().info('Transform Obs: {}'.format(current_goal_pose))
         k_rep = 10
-        k_att = 1
+        k_att = 3
         k_turn = 1
         
-        q_star = 0.5 #Check units
+        q_star = 1 #Check units
         obj_dist = math.sqrt((current_obs_pose[0])**2 + (current_obs_pose[1])**2)
         goal_dist = math.sqrt((current_goal_pose[0])**2 + (current_goal_pose[1])**2)
         
@@ -240,7 +240,7 @@ class TrackingNode(Node):
         cmd_vel = Twist()
         cmd_vel.linear.x = (u_x_att+u_x_rep)*.1
         cmd_vel.linear.y = (u_y_rep)*.2
-        cmd_vel.angular.z = (u_z_att)*.2
+        cmd_vel.angular.z = (u_z_att)
         # self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
     
