@@ -84,7 +84,7 @@ class ColorObjDetectionNode(Node):
         self.ts.registerCallback(self.camera_callback)
 
     def camera_callback(self, rgb_msg, points_msg):
-        self.get_logger().info('Received RGB and Depth Messages')
+        # self.get_logger().info('Received RGB and Depth Messages')
         # get ROS parameters
         param_color_low = np.array(self.get_parameter('color_low').value)
         param_color_high = np.array(self.get_parameter('color_high').value)
