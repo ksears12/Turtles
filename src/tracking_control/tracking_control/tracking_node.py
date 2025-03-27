@@ -199,8 +199,8 @@ class TrackingNode(Node):
         k_turn = 1
         
         q_star = 0.5 #Check units
-        obj_dist = math.sqrt(current_obs_pose[0])**2 + (current_obs_pose[1])**2)
-        goal_dist = math.sqrt(current_goal_pose[0])**2 + (current_goal_pose[1])**2)
+        obj_dist = math.sqrt((current_obs_pose[0])**2 + (current_obs_pose[1])**2)
+        goal_dist = math.sqrt((current_goal_pose[0])**2 + (current_goal_pose[1])**2)
         
         # Repulsive field
         if obj_dist < q_star:
@@ -225,6 +225,7 @@ class TrackingNode(Node):
         cmd_vel.linear.x = 0
         cmd_vel.linear.y = 0
         cmd_vel.angular.z = u_z_att
+        self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
     
         ############################################

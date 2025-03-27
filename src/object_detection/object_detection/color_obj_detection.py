@@ -90,19 +90,25 @@ class ColorObjDetectionNode(Node):
         param_color_high = np.array(self.get_parameter('color_high').value)
         param_object_size_min = self.get_parameter('object_size_min').value
 
-        self.get_logger().info('Color Low: {}'.format(param_color_low))
-        self.get_logger().info('Color High: {}'.format(param_color_high))
+        # self.get_logger().info('Color Low: {}'.format(param_color_low))
+        # self.get_logger().info('Color High: {}'.format(param_color_high))
 
         # Convert the ROS image message to a numpy array
         rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
-        plt.imshow(rgb_image)
+        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
         plt.savefig('rgb_image_obj.png')
         plt.close()
         # to hsv
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
+        plt.imshow(hsv_image,'hsv')
+        plt.savefig('hsv_image_obj.png')
+        plt.close()
         
         # color mask
         color_mask = cv2.inRange(hsv_image, param_color_low, param_color_high)
+        plt.imshow(color_mask,'gray')
+        plt.savefig('color_mask_obj.png')
+        plt.close()
         # find largest contour
         contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         if len(contours) > 0:
@@ -150,19 +156,9 @@ class ColorObjDetectionNode(Node):
         detect_img_msg.header = rgb_msg.header
         self.get_logger().info('image message published')
         self.pub_detected_obj.publish(detect_img_msg)
-        detect_img_msg = self.br.cv2_to_imgmsg(color_mask, encoding='8UC1')
-        detect_img_msg.header = rgb_msg.header
-        self.get_logger().info('image message published')
-        self.pub_detected_obj2.publish(detect_img_msg)
 
-        plt.imshow(hsv_image)
-        plt.savefig('hsv_image_obj.png')
-        plt.close()
-        plt.imshow(color_mask)
-        plt.savefig('color_mask_obj.png')
-        plt.close()
-        plt.imshow(rgb_image)
-        plt.savefig('rgb_image2_obj.png')
+        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+        plt.savefig('rgb_image_rect_obj.png')
         plt.close()
         
         
