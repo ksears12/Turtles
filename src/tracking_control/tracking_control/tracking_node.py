@@ -83,7 +83,7 @@ class TrackingNode(Node):
         self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
 
         # Create timer, running at 100Hz
-        self.timer = self.create_timer(1, self.timer_update)
+        self.timer = self.create_timer(.5, self.timer_update)
     
     def detected_obs_pose_callback(self, msg):
         #self.get_logger().info('Received Detected Object Pose')
@@ -229,7 +229,7 @@ class TrackingNode(Node):
             u_y_rep = 0.0
         
         # Attractive field in x direction (drive straight forward to goal
-        if goal_dist > 0.3:
+        if goal_dist > 0.5:
             u_x_att = k_att*current_goal_pose[0]
         else:
             u_x_att = 0.0
