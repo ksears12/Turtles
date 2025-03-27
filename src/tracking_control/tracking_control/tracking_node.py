@@ -209,21 +209,21 @@ class TrackingNode(Node):
             u_x_rep = k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_x
             u_y_rep = k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
         else:
-            u_x_rep = 0
-            u_y_rep = 0
+            u_x_rep = 0.0
+            u_y_rep = 0/0
         
         # Attractive field in x direction (drive straight forward to goal
         if goal_dist > 0.3:
             u_x_att = k_att*current_goal_pose[0]
         else:
-            u_x_att = 0
+            u_x_att = 0.0
         
         # Turn towards goal
         u_z_att = -k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
-        cmd_vel.linear.x = 0
-        cmd_vel.linear.y = 0
+        cmd_vel.linear.x = 0.0
+        cmd_vel.linear.y = 0.0
         cmd_vel.angular.z = u_z_att
         self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
