@@ -6,6 +6,7 @@ from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 import os
 from ament_index_python.packages import get_package_share_directory
 
+
 def generate_launch_description():
     object_detection_pkg = 'object_detection'
     tracking_pkg = 'tracking_control'
@@ -41,12 +42,12 @@ def generate_launch_description():
         output="screen"
     )
 
-    motor_control_node = Node(
-        package=yahboomcar_package_path,
-        executable='Mcnamu_driver_X3',
-        name='motor_control_node',
-        output="screen"
-    )
+    # motor_control_node = Node(
+    #     package=yahboomcar_package_path,
+    #     executable='Mcnamu_driver_X3',
+    #     name='motor_control_node',
+    #     output="screen"
+    # )
 
     astra_camera_launch = IncludeLaunchDescription(XMLLaunchDescriptionSource(
         [os.path.join(cam_package_path, 'launch'),
@@ -62,6 +63,6 @@ def generate_launch_description():
         goal_detection_node,
         tracking_control_node,
         astra_camera_launch,
-        yahboomcar_brinup_launch,
-        motor_control_node
+        yahboomcar_brinup_launch
+        # motor_control_node
     ])
