@@ -210,7 +210,7 @@ class TrackingNode(Node):
             u_y_rep = k_rep*(1/q_star - 1/obj_dist)*1/(obj_dist**2)*grad_dist_y
         else:
             u_x_rep = 0.0
-            u_y_rep = 0/0
+            u_y_rep = 0.0
         
         # Attractive field in x direction (drive straight forward to goal
         if goal_dist > 0.3:
