@@ -165,7 +165,7 @@ class TrackingNode(Node):
         
         except TransformException as e:
             self.get_logger().error('Transform error: ' + str(e))
-            return
+            return np.ones(3), np.ones(3)
         
         return obstacle_pose, goal_pose
     
@@ -183,7 +183,7 @@ class TrackingNode(Node):
             return
         
         # Get the current object pose in the robot base_footprint frame
-        current_obs_pose, current_goal_pose = self.get_current_poses()
+        # current_obs_pose, current_goal_pose = self.get_current_poses()
         
         # TODO: get the control velocity command
         cmd_vel = self.controller()
@@ -204,8 +204,10 @@ class TrackingNode(Node):
         # Implement something tangent to object in y or z direction - can move around object while still moving toward goal
         # Need current robot position, goal position, and obstacle position(s)
         # Use equation from lecture 12 slide 20
-
-        current_obs_pose, current_goal_pose = self.get_current_poses()
+        try:
+            current_obs_pose, current_goal_pose = self.get_current_poses()
+        except:
+            current_obs_pose, current_goal_pose = np.ones(3),np.ones(3)
         
         k_rep = 10
         k_att = 1
@@ -235,7 +237,7 @@ class TrackingNode(Node):
         u_z_att = -k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
-        cmd_vel.linear.x = 0.0
+        cmd_vel.linear.x = u_x_att
         cmd_vel.linear.y = 0.0
         cmd_vel.angular.z = u_z_att
         self.get_logger().info('Transform Error: {}'.format(cmd_vel))
