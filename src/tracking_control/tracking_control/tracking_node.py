@@ -238,9 +238,9 @@ class TrackingNode(Node):
         u_z_att = k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
-        cmd_vel.linear.x = u_x_att+u_x_rep
-        cmd_vel.linear.y = u_y_rep
-        cmd_vel.angular.z = u_z_att
+        cmd_vel.linear.x = (u_x_att+u_x_rep)*.1
+        cmd_vel.linear.y = (u_y_rep)*.1
+        cmd_vel.angular.z = (u_z_att)*.1
         # self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
     
