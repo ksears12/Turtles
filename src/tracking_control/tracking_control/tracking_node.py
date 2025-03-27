@@ -208,7 +208,8 @@ class TrackingNode(Node):
             current_obs_pose, current_goal_pose = self.get_current_poses()
         except:
             current_obs_pose, current_goal_pose = np.ones(3),np.ones(3)
-        
+        self.get_logger().info('Transform Goal: {}'.format(current_obs_pose))
+        self.get_logger().info('Transform Obs: {}'.format(current_goal_pose))
         k_rep = 10
         k_att = 1
         k_turn = 1
@@ -240,7 +241,7 @@ class TrackingNode(Node):
         cmd_vel.linear.x = u_x_att
         cmd_vel.linear.y = 0.0
         cmd_vel.angular.z = u_z_att
-        self.get_logger().info('Transform Error: {}'.format(cmd_vel))
+        # self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
     
         ############################################
