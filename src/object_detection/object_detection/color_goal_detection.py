@@ -95,20 +95,20 @@ class ColorObjDetectionNode(Node):
 
         # Convert the ROS image message to a numpy array
         rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
-        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-        plt.savefig('rgb_image_goal.png')
-        plt.close()
+        # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+        # plt.savefig('rgb_image_goal.png')
+        # plt.close()
         # to hsv
         hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
-        plt.imshow(hsv_image,'hsv')
-        plt.savefig('hsv_image_goal.png')
-        plt.close()
+        # plt.imshow(hsv_image,'hsv')
+        # plt.savefig('hsv_image_goal.png')
+        # plt.close()
         
         # color mask
         color_mask = cv2.inRange(hsv_image, param_color_low, param_color_high)
-        plt.imshow(color_mask,'gray')
-        plt.savefig('color_mask_goal.png')
-        plt.close()
+        # plt.imshow(color_mask,'gray')
+        # plt.savefig('color_mask_goal.png')
+        # plt.close()
 
         # find largest contour
         contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -158,9 +158,9 @@ class ColorObjDetectionNode(Node):
         self.get_logger().info('image message published')
         self.pub_detected_obj.publish(detect_img_msg)
         
-        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-        plt.savefig('rgb_image_rect_goal.png')
-        plt.close()
+        # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+        # plt.savefig('rgb_image_rect_goal.png')
+        # plt.close()
         
 def main(args=None):
     # Initialize the rclpy library
