@@ -98,17 +98,17 @@ class TrackingNode(Node):
         # if np.linalg.norm(center_points) > 3 or center_points[2] > 0.7:
         #     return
         
-        try:
-            # Transform the center point from the camera frame to the world frame
-            transform = self.tf_buffer.lookup_transform(odom_id,msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.1))
-            t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
-            cp_world = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
-        except TransformException as e:
-            self.get_logger().error('Transform Error: {}'.format(e))
-            return
+        # try:
+        #     # Transform the center point from the camera frame to the world frame
+        #     transform = self.tf_buffer.lookup_transform(odom_id,msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.1))
+        #     t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
+        #     cp_world = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
+        # except TransformException as e:
+        #     self.get_logger().error('Transform Error: {}'.format(e))
+        #     return
         
         # Get the detected object pose in the world frame
-        self.obs_pose = cp_world
+        self.obs_pose = center_points
 
     def detected_goal_pose_callback(self, msg):
         #self.get_logger().info('Received Detected Object Pose')
@@ -123,17 +123,17 @@ class TrackingNode(Node):
         # if np.linalg.norm(center_points) > 3 or center_points[2] > 0.7:
         #     return
         
-        try:
-            # Transform the center point from the camera frame to the world frame
-            transform = self.tf_buffer.lookup_transform(odom_id,msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.1))
-            t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
-            cp_world = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
-        except TransformException as e:
-            self.get_logger().error('Transform Error: {}'.format(e))
-            return
+        # try:
+        #     # Transform the center point from the camera frame to the world frame
+        #     transform = self.tf_buffer.lookup_transform(odom_id,msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.1))
+        #     t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
+        #     cp_world = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
+        # except TransformException as e:
+        #     self.get_logger().error('Transform Error: {}'.format(e))
+        #     return
         
         # Get the detected object pose in the world frame
-        self.goal_pose = cp_world
+        self.goal_pose = center_points
         
     def get_current_poses(self):
         
