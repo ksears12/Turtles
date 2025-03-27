@@ -31,12 +31,12 @@ def generate_launch_description():
         output="screen"
     )
 
-    tracking_control_node = Node(
-        package=tracking_pkg,
-        executable='tracking_node',
-        name='tracking_node',
-        output="screen"
-    )
+    # tracking_control_node = Node(
+    #     package=tracking_pkg,
+    #     executable='tracking_node',
+    #     name='tracking_node',
+    #     output="screen"
+    # )
     
     return LaunchDescription([
         obj_detection_node,
