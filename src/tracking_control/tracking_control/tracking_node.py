@@ -177,8 +177,8 @@ class TrackingNode(Node):
         # and update the command velocity accordingly
         if self.goal_pose is None:
             cmd_vel = Twist()
-            cmd_vel.linear.x = 0.0
-            cmd_vel.angular.z = 0.0
+            cmd_vel.linear.x = 0.1
+            cmd_vel.angular.z = 1
             self.pub_control_cmd.publish(cmd_vel)
             return
         
@@ -210,8 +210,8 @@ class TrackingNode(Node):
             current_obs_pose, current_goal_pose = np.ones(3),np.ones(3)
         # self.get_logger().info('Transform Goal: {}'.format(current_obs_pose))
         # self.get_logger().info('Transform Obs: {}'.format(current_goal_pose))
-        k_rep = 10
-        k_att = 3
+        k_rep = 2
+        k_att = 0.3
         k_turn = 1
         
         q_star = 1 #Check units
@@ -238,9 +238,9 @@ class TrackingNode(Node):
         u_z_att = k_turn*current_goal_pose[1]
 
         cmd_vel = Twist()
-        cmd_vel.linear.x = (u_x_att+u_x_rep)*.1
-        cmd_vel.linear.y = (u_y_rep)*.2
-        cmd_vel.angular.z = (u_z_att)
+        cmd_vel.linear.x = u_x_att+u_x_rep
+        cmd_vel.linear.y = u_y_rep
+        cmd_vel.angular.z = u_z_att
         # self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
     
