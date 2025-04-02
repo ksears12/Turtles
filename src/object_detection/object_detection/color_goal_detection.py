@@ -96,6 +96,7 @@ class ColorObjDetectionNode(Node):
 
         self.searching = True
         self.first = True
+        self.count = 1000
         
         # Create a transform listener
         self.tf_buffer = Buffer()
@@ -126,6 +127,7 @@ class ColorObjDetectionNode(Node):
         if self.searching:
             if self.first:
                 past_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+                self.first = False
             else:
                 current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
                 im_age1 = cv2.cvtColor(past_image, cv2.COLOR_BGR2RGB)
@@ -177,6 +179,8 @@ class ColorObjDetectionNode(Node):
                     # param_color_low[0] = np.array(color)[0]-50
                     param_color_high = np.ones(3)*255
                     param_color_high = np.array(color)+100.
+                
+                self.searching = False
 
         else:
                 
@@ -247,8 +251,9 @@ class ColorObjDetectionNode(Node):
             self.pub_detected_obj.publish(detect_img_msg)
             
             plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-            plt.savefig('rgb_image_rect_goal.png')
+            plt.savefig('rgb_image_rect_goal' + str(self.count)+'.png')
             plt.close()
+            self.count += 1
             
 def main(args=None):
     # Initialize the rclpy library
