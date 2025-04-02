@@ -126,12 +126,12 @@ class ColorObjDetectionNode(Node):
         # self.get_logger().info('Color High: {}'.format(param_color_high))
         if self.searching:
             if self.first:
-                past_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+                self.past_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
                 self.first = False
             else:
-                current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
-                im_age1 = cv2.cvtColor(past_image, cv2.COLOR_BGR2RGB)
-                im_age2 = cv2.cvtColor(current_image, cv2.COLOR_BGR2RGB)
+                self.current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+                im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2RGB)
+                im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2RGB)
 
                 image = np.zeros(im_age1.shape)
                 for i in range(3):
@@ -174,11 +174,11 @@ class ColorObjDetectionNode(Node):
                     pixed_image = blur(cv2.cvtColor(im_age2,cv2.COLOR_RGB2HSV),20)
                     color = np.array(pixed_image[center_x,center_y])
                     self.get_logger().info('Item Identified: {}'.format(color))
-                    param_color_low = np.zeros(3)
+                    self.param_color_low = np.zeros(3)
 
                     # param_color_low[0] = np.array(color)[0]-50
-                    param_color_high = np.ones(3)*255
-                    param_color_high = np.array(color)+100.
+                    self.param_color_high = np.ones(3)*255
+                    self.param_color_high = np.array(color)+100.
                 
                 self.searching = False
 
@@ -197,7 +197,7 @@ class ColorObjDetectionNode(Node):
             # plt.close()
             
             # color mask
-            color_mask = cv2.inRange(hsv_image, param_color_low, param_color_high)
+            color_mask = cv2.inRange(hsv_image, self.param_color_low, self.param_color_high)
             # plt.imshow(color_mask,'gray')
             # plt.savefig('color_mask_goal.png')
             # plt.close()
