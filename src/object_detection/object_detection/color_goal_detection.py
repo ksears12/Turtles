@@ -53,6 +53,33 @@ def q2R(q):
     qhat = hat(q[1:4])
     qhat2 = qhat.dot(qhat)
     return I + 2*q[0]*qhat + 2*qhat2
+
+def blur(image1, n):
+    image = image1.copy()
+    ni = int(image.shape[0]//n-1)
+    nj = int(image.shape[1]//n-1)
+
+    for i in range(ni):
+        for j in range(nj):
+            if len(image.shape) == 2:
+                pixel_sum = 0
+            else:
+                pixel_sum = np.zeros(int(image.shape[-1]))
+            
+            # count = 0
+            # for i1 in range(n*i,n*(i+1)):
+            #     for j1 in range(n*j,n*(j+1)):
+            #         pixel_sum = (pixel_sum*count + image[i1,j1])/(count+1)
+                    
+            # count += 1
+            try:
+                for i1 in range(3):
+                    image[n*i:n*(i+1),n*j:n*(j+1),i1] = np.int8(np.sum(image[n*i:n*(i+1),n*j:n*(j+1),i1])/n**2)
+            except:
+                x34 = 3
+    return image
+
+
 ######################
 
 class ColorObjDetectionNode(Node):
@@ -66,6 +93,9 @@ class ColorObjDetectionNode(Node):
         self.declare_parameter('object_size_min', 1000)
         # Used to convert between ROS and OpenCV images
         self.br = CvBridge()
+
+        self.searching = True
+        self.first = True
         
         # Create a transform listener
         self.tf_buffer = Buffer()
@@ -87,86 +117,139 @@ class ColorObjDetectionNode(Node):
     def camera_callback(self, rgb_msg, points_msg, dep_msg):
         # self.get_logger().info('Received RGB and Depth Messages')
         # get ROS parameters
-        param_color_low = np.array(self.get_parameter('color_low').value)
-        param_color_high = np.array(self.get_parameter('color_high').value)
+        # param_color_low = np.array(self.get_parameter('color_low').value)
+        # param_color_high = np.array(self.get_parameter('color_high').value)
         param_object_size_min = self.get_parameter('object_size_min').value
         
         # self.get_logger().info('Color Low: {}'.format(param_color_low))
         # self.get_logger().info('Color High: {}'.format(param_color_high))
+        if self.searching:
+            if self.first:
+                past_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+            else:
+                current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+                im_age1 = cv2.cvtColor(past_image, cv2.COLOR_BGR2RGB)
+                im_age2 = cv2.cvtColor(current_image, cv2.COLOR_BGR2RGB)
 
-        # Convert the ROS image message to a numpy array
-        rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
-        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-        plt.savefig('rgb_image_goal.png')
-        plt.close()
-        rgb_image = self.br.imgmsg_to_cv2(dep_msg,"bgr8")
-        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-        plt.savefig('rgb_image_depth.png')
-        plt.close()
-        # to hsv
-        hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
-        # plt.imshow(hsv_image,'hsv')
-        # plt.savefig('hsv_image_goal.png')
-        # plt.close()
-        
-        # color mask
-        color_mask = cv2.inRange(hsv_image, param_color_low, param_color_high)
-        # plt.imshow(color_mask,'gray')
-        # plt.savefig('color_mask_goal.png')
-        # plt.close()
+                image = np.zeros(im_age1.shape)
+                for i in range(3):
+                    img_index = np.where(im_age1[:,:,i]>im_age2[:,:,i]) 
+                    image[:,:,i][img_index] = im_age1[:,:,i][img_index] - im_age2[:,:,i][img_index]
 
-        # find largest contour
-        contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if len(contours) > 0:
-            largest_contour = max(contours, key=cv2.contourArea)
-            x, y, w, h = cv2.boundingRect(largest_contour)
-            # threshold by size
-            if w * h < param_object_size_min:
-                return
-            # draw rectangle
-            rgb_image=cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
-            center_x = int(x + w / 2)
-            center_y = int(y + h / 2)
+                    img_index = np.where(im_age1[:,:,i]<=im_age2[:,:,i]) 
+
+                    image[:,:,i][img_index] = im_age2[:,:,i][img_index] - im_age1[:,:,i][img_index]
+
+                imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
+                index1 = np.where(imgae<=60)
+
+                for k in range(index1[0].size):
+                    index1a = index1[0][k]
+                    index1b = index1[1][k]
+                    image[index1a,index1b]=np.array((0,0,0))
+
+                index1 = np.where(image!=0)
+
+                for k in range(index1[0].size):
+                    index1a = index1[0][k]
+                    index1b = index1[1][k]
+                    image[index1a,index1b]=np.array((255,255,255))
+
+                plt.imshow(image)
+                plt.savefig('grayscale_difference.png')
+                plt.close()
+
+                contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                if len(contours) > 0:
+                    largest_contour = max(contours, key=cv2.contourArea)
+                    x, y, w, h = cv2.boundingRect(largest_contour)
+                    # threshold by size    
+                    # draw rectangle
+                    rgb_image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
+                    center_x = int(x + w *3/ 4)
+                    center_y = int(y + h *3/ 4)
+                    
+                    pixed_image = blur(cv2.cvtColor(im_age2,cv2.COLOR_RGB2HSV),20)
+                    color = np.array(pixed_image[center_x,center_y])
+                    self.get_logger().info('Item Identified: {}'.format(color))
+                    param_color_low = np.zeros(3)
+
+                    # param_color_low[0] = np.array(color)[0]-50
+                    param_color_high = np.ones(3)*255
+                    param_color_high = np.array(color)+100.
+
         else:
-            self.get_logger().info('No Contours')
-            return
-        # get the location of the detected object using point cloud
-        pointid = (center_y*points_msg.row_step) + (center_x*points_msg.point_step)
-        (X, Y, Z) = struct.unpack_from('fff', points_msg.data, offset=pointid)
-        center_points = np.array([X,Y,Z])
+                
+            # Convert the ROS image message to a numpy array
+            rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+            # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+            # plt.savefig('rgb_image_goal.png')
+            # plt.close()
+            
+            # to hsv
+            hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
+            # plt.imshow(hsv_image,'hsv')
+            # plt.savefig('hsv_image_goal.png')
+            # plt.close()
+            
+            # color mask
+            color_mask = cv2.inRange(hsv_image, param_color_low, param_color_high)
+            # plt.imshow(color_mask,'gray')
+            # plt.savefig('color_mask_goal.png')
+            # plt.close()
 
-        if np.any(np.isnan(center_points)):
-            return
+            # find largest contour
+            contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            if len(contours) > 0:
+                largest_contour = max(contours, key=cv2.contourArea)
+                x, y, w, h = cv2.boundingRect(largest_contour)
+                # threshold by size
+                if w * h < param_object_size_min:
+                    return
+                # draw rectangle
+                rgb_image=cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
+                center_x = int(x + w / 2)
+                center_y = int(y + h / 2)
+            else:
+                self.get_logger().info('No Contours')
+                return
+            # get the location of the detected object using point cloud
+            pointid = (center_y*points_msg.row_step) + (center_x*points_msg.point_step)
+            (X, Y, Z) = struct.unpack_from('fff', points_msg.data, offset=pointid)
+            center_points = np.array([X,Y,Z])
 
-        try:
-            # Transform the center point from the camera frame to the world frame
-            transform = self.tf_buffer.lookup_transform('base_footprint',rgb_msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.2))
-            #transform = self.tf_buffer.lookup_transform('world_frame_id',rgb_msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.2))
-            t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
-            cp_robot = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
-            # Create a pose message for the detected object
-            detected_obj_pose = PoseStamped()
-            detected_obj_pose.header.frame_id = 'base_footprint'
-            detected_obj_pose.header.stamp = rgb_msg.header.stamp
-            detected_obj_pose.pose.position.x = cp_robot[0]
-            detected_obj_pose.pose.position.y = cp_robot[1]
-            detected_obj_pose.pose.position.z = cp_robot[2]
-        except TransformException as e:
-            self.get_logger().error('Transform Error: {}'.format(e))
-            return
-        
-        # Publish the detected object
-        self.pub_detected_obj_pose.publish(detected_obj_pose)
-        # publush the detected object image
-        detect_img_msg = self.br.cv2_to_imgmsg(rgb_image, encoding='bgr8')
-        detect_img_msg.header = rgb_msg.header
-        self.get_logger().info('image message published')
-        self.pub_detected_obj.publish(detect_img_msg)
-        
-        # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-        # plt.savefig('rgb_image_rect_goal.png')
-        # plt.close()
-        
+            if np.any(np.isnan(center_points)):
+                return
+
+            try:
+                # Transform the center point from the camera frame to the world frame
+                transform = self.tf_buffer.lookup_transform('base_footprint',rgb_msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.2))
+                #transform = self.tf_buffer.lookup_transform('world_frame_id',rgb_msg.header.frame_id,rclpy.time.Time(),rclpy.duration.Duration(seconds=0.2))
+                t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
+                cp_robot = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
+                # Create a pose message for the detected object
+                detected_obj_pose = PoseStamped()
+                detected_obj_pose.header.frame_id = 'base_footprint'
+                detected_obj_pose.header.stamp = rgb_msg.header.stamp
+                detected_obj_pose.pose.position.x = cp_robot[0]
+                detected_obj_pose.pose.position.y = cp_robot[1]
+                detected_obj_pose.pose.position.z = cp_robot[2]
+            except TransformException as e:
+                self.get_logger().error('Transform Error: {}'.format(e))
+                return
+            
+            # Publish the detected object
+            self.pub_detected_obj_pose.publish(detected_obj_pose)
+            # publush the detected object image
+            detect_img_msg = self.br.cv2_to_imgmsg(rgb_image, encoding='bgr8')
+            detect_img_msg.header = rgb_msg.header
+            self.get_logger().info('image message published')
+            self.pub_detected_obj.publish(detect_img_msg)
+            
+            plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+            plt.savefig('rgb_image_rect_goal.png')
+            plt.close()
+            
 def main(args=None):
     # Initialize the rclpy library
     rclpy.init(args=args)
