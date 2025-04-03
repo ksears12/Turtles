@@ -142,6 +142,10 @@ class ColorObjDetectionNode(Node):
 
                     image[:,:,i][img_index] = im_age2[:,:,i][img_index] - im_age1[:,:,i][img_index]
 
+                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                plt.savefig('grayscale_difference0.png')
+                plt.close()
+
                 imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
                 index1 = np.where(imgae<=60)
                 self.get_logger().info('Item Identified: ')
@@ -150,6 +154,10 @@ class ColorObjDetectionNode(Node):
                     index1a = index1[0][k]
                     index1b = index1[1][k]
                     image[index1a,index1b]*=0
+                
+                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                plt.savefig('grayscale_difference1.png')
+                plt.close()
 
                 index1 = np.where(imgae!=0)
 
@@ -160,8 +168,13 @@ class ColorObjDetectionNode(Node):
                     image[index1a,index1b]+=255
 
                 plt.imshow(image)
-                plt.savefig('grayscale_difference.png')
+                plt.savefig('rbg_difference.png')
                 plt.close()
+
+                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                plt.savefig('grayscale_difference2.png')
+                plt.close()
+
                 try:
                     self.get_logger().info('Item Identified:')
                     image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
