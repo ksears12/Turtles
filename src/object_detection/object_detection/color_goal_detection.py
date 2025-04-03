@@ -181,7 +181,8 @@ class ColorObjDetectionNode(Node):
                         self.param_color_high = np.array(color)+100.
                     
                     self.searching = False
-                except:
+                except Exception as e:
+                    self.get_logger().error('Error: {}'.format(e))
                     return
 
         else:
