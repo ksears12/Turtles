@@ -147,7 +147,10 @@ class ColorObjDetectionNode(Node):
                 plt.close()
 
                 imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
-                index1 = np.where(imgae<=imgae.max/2)
+                con = np.max(imgae)
+                if con < 60:
+                    con = 60
+                index1 = np.where(imgae<=con)
                 self.get_logger().info('Item Identified: ')
 
                 for k in range(index1[0].size):
