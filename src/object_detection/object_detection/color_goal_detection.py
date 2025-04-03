@@ -144,6 +144,7 @@ class ColorObjDetectionNode(Node):
 
                 imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
                 index1 = np.where(imgae<=60)
+                self.get_logger().info('Item Identified: {}'.format(index1))
 
                 for k in range(index1[0].size):
                     index1a = index1[0][k]
