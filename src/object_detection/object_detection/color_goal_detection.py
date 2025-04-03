@@ -160,6 +160,7 @@ class ColorObjDetectionNode(Node):
                 plt.close()
 
                 index1 = np.where(imgae>60)
+                self.get_logger().info('Item Identified: {}'.format(image[index1[0][0],index1[1][0]]))
 
                 for k in range(index1[0].size):
                     index1a = index1[0][k]
