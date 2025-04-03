@@ -130,58 +130,49 @@ class ColorObjDetectionNode(Node):
                 self.first = False
             else:
                 self.current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
-                im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2RGB)
-                im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2RGB)
+                im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2GRAY)
+                im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2GRAY)
+                im_age3 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2HSV)
+                # print(im_age2.shape)
+                # print(im_age2[0,0,0])
 
                 image = im_age1
-                for i in range(3):
-                    img_index = np.where(im_age1[:,:,i]>im_age2[:,:,i]) 
-                    image[:,:,i][img_index] = im_age1[:,:,i][img_index] - im_age2[:,:,i][img_index]
+                
+                img_index = np.where(im_age1[:,:]>im_age2[:,:]) 
+                image[img_index[0],img_index[1]] = im_age1[img_index[0],img_index[1]] - im_age2[img_index[0],img_index[1]]
 
-                    img_index = np.where(im_age1[:,:,i]<=im_age2[:,:,i]) 
+                img_index = np.where(im_age1[:,:]<=im_age2[:,:]) 
 
-                    image[:,:,i][img_index] = im_age2[:,:,i][img_index] - im_age1[:,:,i][img_index]
+                image[img_index[0],img_index[1]] = im_age2[img_index[0],img_index[1]] - im_age1[img_index[0],img_index[1]]
 
-                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                plt.imshow(image,'gray')
                 plt.savefig('grayscale_difference0.png')
                 plt.close()
 
-                imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
-                con = np.max(imgae)/2
-                if con < 60:
-                    con = 60
-                index1 = np.where(imgae<=con)
-                self.get_logger().info('Item Identified: ')
-
-                for k in range(index1[0].size):
-                    index1a = index1[0][k]
-                    index1b = index1[1][k]
-                    image[index1a,index1b]*=0
+                # imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
+                # print(imgae)
+                con = np.max(image)/2
+                self.get_logger().info('Item Identified: {}'.format(con))
+                if con < 1:
+                    return
                 
-                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                index1 = np.where(image<=con)
+                image[index1[0],index1[1]]=0
+                    
+                
+                plt.imshow(image,'gray')
                 plt.savefig('grayscale_difference1.png')
                 plt.close()
 
-                index1 = np.where(imgae>imgae.max/2)
-                self.get_logger().info('Item Identified: {}'.format(image[index1[0][0],index1[1][0]]))
-
-                for k in range(index1[0].size):
-                    index1a = index1[0][k]
-                    index1b = index1[1][k]
-                    image[index1a,index1b]=image[index1[0][0],index1[1][0]]
-                    # image[index1a,index1b]+=255
-
-                plt.imshow(image)
-                plt.savefig('rbg_difference.png')
-                plt.close()
-
-                plt.imshow(cv2.cvtColor(image, cv2.COLOR_RGB2GRAY),'gray')
+                index1 = np.where(image>con)                    
+                image[index1[0],index1[1]]=255
+                   
+                plt.imshow(image,'gray')
                 plt.savefig('grayscale_difference2.png')
                 plt.close()
 
                 try:
-                    self.get_logger().info('Item Identified:')
-                    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                    self.get_logger().info('Try Contour')
 
                     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     
@@ -197,7 +188,7 @@ class ColorObjDetectionNode(Node):
                         center_x = int(x + w *3/ 4)
                         center_y = int(y + h *3/ 4)
                         
-                        pixed_image = blur(cv2.cvtColor(im_age2,cv2.COLOR_RGB2HSV),20)
+                        pixed_image = blur(im_age3,20)
                         color = np.array(pixed_image[center_x,center_y])
                         self.get_logger().info('Item Identified: {}'.format(color))
                         self.param_color_low = np.zeros(3)
