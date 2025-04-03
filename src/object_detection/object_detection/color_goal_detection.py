@@ -151,7 +151,7 @@ class ColorObjDetectionNode(Node):
                     index1b = index1[1][k]
                     image[index1a,index1b]*=0
 
-                index1 = np.where(image!=0)
+                index1 = np.where(imgae!=0)
 
                 for k in range(index1[0].size):
                     index1a = index1[0][k]
