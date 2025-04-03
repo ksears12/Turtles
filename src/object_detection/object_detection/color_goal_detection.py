@@ -171,6 +171,8 @@ class ColorObjDetectionNode(Node):
                     if len(contours) > 0:
                         largest_contour = max(contours, key=cv2.contourArea)
                         x, y, w, h = cv2.boundingRect(largest_contour)
+                        if w * h < param_object_size_min:
+                            return
                         # threshold by size    
                         # draw rectangle
                         rgb_image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
