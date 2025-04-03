@@ -164,7 +164,7 @@ class ColorObjDetectionNode(Node):
                 plt.close()
                 try:
                     self.get_logger().info('Item Identified:')
-                    image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
 
                     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     
