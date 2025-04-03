@@ -160,27 +160,29 @@ class ColorObjDetectionNode(Node):
                 plt.imshow(image)
                 plt.savefig('grayscale_difference.png')
                 plt.close()
+                try:
+                    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    if len(contours) > 0:
+                        largest_contour = max(contours, key=cv2.contourArea)
+                        x, y, w, h = cv2.boundingRect(largest_contour)
+                        # threshold by size    
+                        # draw rectangle
+                        rgb_image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
+                        center_x = int(x + w *3/ 4)
+                        center_y = int(y + h *3/ 4)
+                        
+                        pixed_image = blur(cv2.cvtColor(im_age2,cv2.COLOR_RGB2HSV),20)
+                        color = np.array(pixed_image[center_x,center_y])
+                        self.get_logger().info('Item Identified: {}'.format(color))
+                        self.param_color_low = np.zeros(3)
 
-                contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                if len(contours) > 0:
-                    largest_contour = max(contours, key=cv2.contourArea)
-                    x, y, w, h = cv2.boundingRect(largest_contour)
-                    # threshold by size    
-                    # draw rectangle
-                    rgb_image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
-                    center_x = int(x + w *3/ 4)
-                    center_y = int(y + h *3/ 4)
+                        # param_color_low[0] = np.array(color)[0]-50
+                        self.param_color_high = np.ones(3)*255
+                        self.param_color_high = np.array(color)+100.
                     
-                    pixed_image = blur(cv2.cvtColor(im_age2,cv2.COLOR_RGB2HSV),20)
-                    color = np.array(pixed_image[center_x,center_y])
-                    self.get_logger().info('Item Identified: {}'.format(color))
-                    self.param_color_low = np.zeros(3)
-
-                    # param_color_low[0] = np.array(color)[0]-50
-                    self.param_color_high = np.ones(3)*255
-                    self.param_color_high = np.array(color)+100.
-                
-                self.searching = False
+                    self.searching = False
+                except:
+                    return
 
         else:
                 
