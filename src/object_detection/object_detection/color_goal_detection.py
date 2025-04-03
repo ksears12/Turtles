@@ -161,7 +161,9 @@ class ColorObjDetectionNode(Node):
                 plt.savefig('grayscale_difference.png')
                 plt.close()
                 try:
+                    image = image.astype('uint8')
                     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                    
                     if len(contours) > 0:
                         largest_contour = max(contours, key=cv2.contourArea)
                         x, y, w, h = cv2.boundingRect(largest_contour)
