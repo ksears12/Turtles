@@ -147,7 +147,7 @@ class ColorObjDetectionNode(Node):
                 plt.close()
 
                 imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
-                con = np.max(imgae)
+                con = np.max(imgae)/2
                 if con < 60:
                     con = 60
                 index1 = np.where(imgae<=con)
