@@ -144,7 +144,7 @@ class ColorObjDetectionNode(Node):
 
                 imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
                 index1 = np.where(imgae<=60)
-                self.get_logger().info('Item Identified: {}'.format(index1))
+                self.get_logger().info('Item Identified: ')
 
                 for k in range(index1[0].size):
                     index1a = index1[0][k]
@@ -169,6 +169,7 @@ class ColorObjDetectionNode(Node):
                     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     
                     if len(contours) > 0:
+                        self.get_logger().info('Item Identified: {}'.format(len(contours)))
                         largest_contour = max(contours, key=cv2.contourArea)
                         x, y, w, h = cv2.boundingRect(largest_contour)
                         if w * h < param_object_size_min:
@@ -188,7 +189,7 @@ class ColorObjDetectionNode(Node):
                         self.param_color_high = np.ones(3)*255
                         self.param_color_high = np.array(color)+100.
                     
-                    self.searching = False
+                        self.searching = False
                 except Exception as e:
                     self.get_logger().error('Error: {}'.format(e))
                     return
