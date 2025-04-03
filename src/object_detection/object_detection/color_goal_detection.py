@@ -133,7 +133,7 @@ class ColorObjDetectionNode(Node):
                 im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2RGB)
                 im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2RGB)
 
-                image = np.zeros(im_age1.shape)
+                image = im_age1
                 for i in range(3):
                     img_index = np.where(im_age1[:,:,i]>im_age2[:,:,i]) 
                     image[:,:,i][img_index] = im_age1[:,:,i][img_index] - im_age2[:,:,i][img_index]
