@@ -162,7 +162,9 @@ class ColorObjDetectionNode(Node):
                 plt.savefig('grayscale_difference.png')
                 plt.close()
                 try:
-                    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+                    self.get_logger().info('Item Identified:')
+                    image = cv2.cvtColor(image, cv2.COLOR_RGB2HSV)
+
                     contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
                     
                     if len(contours) > 0:
