@@ -159,7 +159,7 @@ class ColorObjDetectionNode(Node):
                 plt.savefig('grayscale_difference1.png')
                 plt.close()
 
-                index1 = np.where(imgae!=0)
+                index1 = np.where(imgae>60)
 
                 for k in range(index1[0].size):
                     index1a = index1[0][k]
