@@ -151,7 +151,7 @@ class ColorObjDetectionNode(Node):
 
                 # imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
                 # print(imgae)
-                con = np.max(image)/2
+                con = np.max(image)*.5
                 self.get_logger().info('Item Identified: {}'.format(con))
                 if con < 1:
                     return
@@ -184,9 +184,12 @@ class ColorObjDetectionNode(Node):
                             return
                         # threshold by size    
                         # draw rectangle
-                        rgb_image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
-                        center_x = int(x + w *3/ 4)
-                        center_y = int(y + h *3/ 4)
+                        image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
+                        plt.imshow(image,'gray')
+                        plt.savefig('rgb_image_goal.png')
+                        plt.close()
+                        center_x = int(x + w/2)
+                        center_y = int(y + h/2)
                         
                         pixed_image = blur(im_age3,20)
                         color = np.array(pixed_image[center_x,center_y])
@@ -234,6 +237,7 @@ class ColorObjDetectionNode(Node):
                 rgb_image=cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 center_x = int(x + w / 2)
                 center_y = int(y + h / 2)
+                
             else:
                 self.get_logger().info('No Contours')
                 return
