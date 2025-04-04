@@ -206,7 +206,7 @@ class ColorObjDetectionNode(Node):
                         center_y = int(y + h/2)
 
                         im_age3 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2HSV)
-                        pixed_image = blur(im_age3,5)
+                        pixed_image = im_age3
 
                         plt.imshow(image,'hsv')
                         plt.savefig('hsv_color_picker.png')
