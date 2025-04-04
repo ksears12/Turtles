@@ -74,7 +74,7 @@ def blur(image1, n):
             # count += 1
             try:
                 for i1 in range(3):
-                    image[n*i:n*(i+1),n*j:n*(j+1),i1] = np.int8(np.sum(image[n*i:n*(i+1),n*j:n*(j+1),i1])/n**2)
+                    image[n*i:n*(i+1),n*j:n*(j+1)] = np.int8(np.sum(image[n*i:n*(i+1),n*j:n*(j+1)])/n**2)
             except:
                 x34 = 3
     return image
@@ -132,11 +132,24 @@ class ColorObjDetectionNode(Node):
                 self.current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
                 im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2GRAY)
                 im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2GRAY)
+                ni = 5
+                self.get_logger().info('Item Identified: {}'.format(ni))
+                im_age2 = blur(im_age2, ni)
+                im_age1 = blur(im_age1, ni)
                 im_age3 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2HSV)
+                
+                plt.imshow(im_age1,'gray')
+                plt.savefig('im_age1.png')
+                plt.close()
+                
+                plt.imshow(im_age2,'gray')
+                plt.savefig('im_age2.png')
+                plt.close()
+                
                 # print(im_age2.shape)
                 # print(im_age2[0,0,0])
 
-                image = im_age1
+                image = im_age1.copy()
                 
                 img_index = np.where(im_age1[:,:]>im_age2[:,:]) 
                 image[img_index[0],img_index[1]] = im_age1[img_index[0],img_index[1]] - im_age2[img_index[0],img_index[1]]
@@ -180,6 +193,7 @@ class ColorObjDetectionNode(Node):
                         self.get_logger().info('Item Identified: {}'.format(len(contours)))
                         largest_contour = max(contours, key=cv2.contourArea)
                         x, y, w, h = cv2.boundingRect(largest_contour)
+                        self.get_logger().info('Item Identified: {}'.format(w*h))
                         if w * h < param_object_size_min:
                             return
                         # threshold by size    
@@ -191,7 +205,7 @@ class ColorObjDetectionNode(Node):
                         center_x = int(x + w/2)
                         center_y = int(y + h/2)
                         
-                        pixed_image = blur(im_age3,20)
+                        pixed_image = blur(im_age3,5)
                         color = np.array(pixed_image[center_x,center_y])
                         self.get_logger().info('Item Identified: {}'.format(color))
                         self.param_color_low = np.zeros(3)
@@ -201,7 +215,6 @@ class ColorObjDetectionNode(Node):
                         self.param_color_high = np.array(color)+100.
                     
                         self.searching = False
-                        return
                 except Exception as e:
                     self.get_logger().error('Error: {}'.format(e))
                     return
@@ -279,7 +292,7 @@ class ColorObjDetectionNode(Node):
             plt.savefig('rgb_image_rect_goal' + str(self.count)+'.png')
             plt.close()
             self.count += 1
-            
+        return
 def main(args=None):
     # Initialize the rclpy library
     rclpy.init(args=args)
