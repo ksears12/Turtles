@@ -153,7 +153,7 @@ class ColorObjDetectionNode(Node):
                 # print(imgae)
                 con = np.max(image)*.5
                 self.get_logger().info('Item Identified: {}'.format(con))
-                if con < 1:
+                if con < 50:
                     return
                 
                 index1 = np.where(image<=con)
