@@ -130,28 +130,31 @@ class ColorObjDetectionNode(Node):
         if self.searching:
             if self.first:
                 self.past_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+                self.get_logger().info('Area Identified')
                 self.first = False
+
+                # Greyscale Area Image
+                # plt.imshow(im_age1,'gray')
+                # plt.savefig('im_age1.png')
+                # plt.close()
+
             else:
                 self.current_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
 
                 im_age1 = cv2.cvtColor(self.past_image, cv2.COLOR_BGR2GRAY)
                 im_age2 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2GRAY)
+                
                 ni = 5
-                self.get_logger().info('Item Identified: {}'.format(ni))
-                im_age2 = blur(im_age2, ni)
-                im_age1 = blur(im_age1, ni)
+                # self.get_logger().info('Item Identified: {}'.format(ni))
+                
+                im_age2 = blur(im_age2, 5)
+                im_age1 = blur(im_age1, 5)
                 im_age3 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2HSV)
                 
-                # plt.imshow(im_age1,'gray')
-                # plt.savefig('im_age1.png')
-                # plt.close()
-                
+                # Greyscale Camera Image
                 # plt.imshow(im_age2,'gray')
                 # plt.savefig('im_age2.png')
                 # plt.close()
-                
-                # print(im_age2.shape)
-                # print(im_age2[0,0,0])
 
                 image = im_age1.copy()
                 
@@ -162,28 +165,28 @@ class ColorObjDetectionNode(Node):
 
                 image[img_index[0],img_index[1]] = im_age2[img_index[0],img_index[1]] - im_age1[img_index[0],img_index[1]]
 
+                #Grayscale Difference between Images
                 plt.imshow(image,'gray')
                 plt.savefig('grayscale_difference0.png')
                 plt.close()
 
-                # imgae = np.sqrt(image[:,:,0]**2+image[:,:,1]**2+image[:,:,2]**2)
-                # print(imgae)
                 con = np.max(image)*.5
-                self.get_logger().info('Item Identified: {}'.format(con))
+                self.get_logger().info('Item Identified, Difference Floor: {}'.format(con))
                 if con < 50:
                     return
                 
                 index1 = np.where(image<=con)
                 image[index1[0],index1[1]]=0
                     
-                
-                plt.imshow(image,'gray')
-                plt.savefig('grayscale_difference1.png')
-                plt.close()
+                # #Grayscale difference, No background
+                # plt.imshow(image,'gray')
+                # plt.savefig('grayscale_difference1.png')
+                # plt.close()
 
                 index1 = np.where(image>con)                    
                 image[index1[0],index1[1]]=255
-                
+
+                #Grayscale difference, White and Black
                 plt.imshow(image,'gray')
                 plt.savefig('grayscale_difference2.png')
                 plt.close()
@@ -203,10 +206,12 @@ class ColorObjDetectionNode(Node):
                         # threshold by size    
                         # draw rectangle
                         image=cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0),5)
-                        print(x,y,w,h)
+                        
+                        ##Grayscale difference, Black and White, With box
                         plt.imshow(image,'gray')
                         plt.savefig('rgb_image_goal_box.png')
                         plt.close()
+
                         center_x = int(x + w/2)
                         center_y = int(y + h/2)
                     
@@ -214,36 +219,28 @@ class ColorObjDetectionNode(Node):
                         im_age3 = cv2.cvtColor(self.current_image, cv2.COLOR_BGR2HSV)
                         pixed_image = im_age3
 
-                        # plt.imshow(pixed_image)
-                        # plt.savefig('hsv_color_picker.png')
-                        # plt.close()
-                        #pixed_image = cv2.circle(pixed_image, (center_x,center_y),10,(255,0,0),5) 
-                        # plt.imshow(pixed_image)
-                        # plt.savefig('hsv_color_picker1.png')
-                        # plt.close()
-                        # print(pixed_image.shape)
-                        # print(center_x, center_y)
-                        plt.imshow(pixed_image[int(center_y-h*.1):int(center_y+h*.1),int(center_x-w*.1):int(center_x)],'hsv')
-                        plt.savefig('hsv_color_picker2.png')
-                        plt.close()
+                        # 
+                        
                         # pixed_image[:,:] = pixed_image[center_x,center_y]
 
                         color = pixed_image[center_y,center_x]
                         self.get_logger().info('Item Identified: {}'.format(color))
                         
-                        # plt.imshow(pixed_image)
-                        # plt.savefig('color'+str(self.count)+'.png')
-                        # plt.close()
                         self.count+=1
                         self.param_color_low = np.zeros(3)
 
-                        # param_color_low[0] = np.array(color)[0]-50
                         self.param_color_high = np.ones(3)*255
                         self.param_color_high[0] = np.array(color)[0]
                         self.param_color_high = np.array(color)+10.
                         self.param_color = np.array(color)
 
                         pixed_image = pixed_image[int(center_y-h*.1):int(center_y+h*.1),int(center_x-w*.1):int(center_x)]
+
+                        #Parameter Generation Image
+                        plt.imshow(pixed_image,'hsv')
+                        plt.savefig('hsv_color_picker2.png')
+                        plt.close()
+                        
                         colors_all = np.zeros(int(pixed_image.shape[0]*pixed_image.shape[1]))
                         for id1 in range(3):
                             in2 = 0
@@ -255,11 +252,22 @@ class ColorObjDetectionNode(Node):
                             self.param_color_low[id1] = colors_all[10]
                             self.param_color_high[id1] = colors_all[-10]
                         
-                        
-                        self.get_logger().info('Low: {}'.format(self.param_color_low))
-                        self.get_logger().info('Low: {}'.format(self.param_color_high))
-                        print(self.param_color_low,self.param_color_high)
- 
+                        #Parameter Color High
+                        pixed_image_high = pixed_image.copy()
+                        pixed_image_high[:,:] = self.param_color_high
+                        plt.imshow(cv2.cvtColor(pixed_image_high, cv2.COLOR_HSV2RGB))
+                        plt.savefig('color_high.png')
+                        plt.close()
+
+                        #Parameter Color Low
+                        pixed_image_low = pixed_image.copy()
+                        pixed_image_low[:,:] = self.param_color_low
+                        plt.imshow(cv2.cvtColor(pixed_image_low, cv2.COLOR_HSV2RGB))
+                        plt.savefig('color_low.png')
+                        plt.close()
+
+                        self.get_logger().info('Color Low: {}'.format(self.param_color_low))
+                        self.get_logger().info('Color High: {}'.format(self.param_color_high))
 
                         if self.located:
                             self.searching = False
@@ -273,30 +281,38 @@ class ColorObjDetectionNode(Node):
                 
             # Convert the ROS image message to a numpy array
             rgb_image = self.br.imgmsg_to_cv2(rgb_msg,"bgr8")
+
+            #Camera image
             # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
             # plt.savefig('rgb_image_goal.png')
             # plt.close()
             
             # to hsv
             hsv_image = cv2.cvtColor(rgb_image, cv2.COLOR_BGR2HSV)
+
+            #HSV of Camera Image
             # plt.imshow(hsv_image,'hsv')
             # plt.savefig('hsv_image_goal.png')
             # plt.close()
             
             # color mask
             color_mask = cv2.inRange(hsv_image, self.param_color_low, self.param_color_high)
-            plt.imshow(color_mask,'gray')
-            plt.savefig('color_mask_goal.png')
-            plt.close()
+
+            # #Color Mask of goal parameters
+            # plt.imshow(color_mask,'gray')
+            # plt.savefig('color_mask_goal.png')
+            # plt.close()
 
             # find largest contour
             contours, _ = cv2.findContours(color_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             if len(contours) > 0:
                 largest_contour = max(contours, key=cv2.contourArea)
                 x, y, w, h = cv2.boundingRect(largest_contour)
+
                 # threshold by size
-                #if w * h < param_object_size_min:
+                # if w * h < param_object_size_min:
                 #    return
+
                 # draw rectangle
                 rgb_image=cv2.rectangle(rgb_image, (x, y), (x + w, y + h), (0, 0, 255), 2)
                 center_x = int(x + w / 2)
@@ -305,18 +321,16 @@ class ColorObjDetectionNode(Node):
             else:
                 self.get_logger().info('No Contours')
                 return
-            plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-            #plt.savefig('rgb_image_rect_goal' + str(self.count)+'.png')
-            plt.savefig('rgb_image_rect_goal.png')
-            plt.close()
+            
+            # #Detected Image plot before Transfor
+            # plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+            # plt.savefig('rgb_image_goal_300.png')
+            # plt.close()
             
             # get the location of the detected object using point cloud
             pointid = (center_y*points_msg.row_step) + (center_x*points_msg.point_step)
-            
             (X, Y, Z) = struct.unpack_from('fff', points_msg.data, offset=pointid)
-            
             center_points = np.array([X,Y,Z])
-            
 
             if np.any(np.isnan(center_points)):
                 return
@@ -329,6 +343,7 @@ class ColorObjDetectionNode(Node):
                 
                 t_R = q2R(np.array([transform.transform.rotation.w,transform.transform.rotation.x,transform.transform.rotation.y,transform.transform.rotation.z]))
                 cp_robot = t_R@center_points+np.array([transform.transform.translation.x,transform.transform.translation.y,transform.transform.translation.z])
+                
                 # Create a pose message for the detected object
                 detected_obj_pose = PoseStamped()
                 detected_obj_pose.header.frame_id = 'base_footprint'
@@ -339,18 +354,26 @@ class ColorObjDetectionNode(Node):
             except TransformException as e:
                 self.get_logger().error('Transform Error: {}'.format(e))
                 return
+            
             # Publish the detected object
             self.pub_detected_obj_pose.publish(detected_obj_pose)
+
             # publush the detected object image
             detect_img_msg = self.br.cv2_to_imgmsg(rgb_image, encoding='bgr8')
             detect_img_msg.header = rgb_msg.header
             self.get_logger().info('image message published')
             self.pub_detected_obj.publish(detect_img_msg)
             
+            #Current Detected Goal object
             plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
-            #plt.savefig('rgb_image_rect_goal' + str(self.count)+'.png')
             plt.savefig('rgb_image_rect_goal.png')
             plt.close()
+
+            ##All Detected Goal objects
+            #plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+            #plt.savefig('rgb_image_rect_goal' + str(self.count)+'.png')
+            #plt.close()
+
             self.count += 1
         return
 def main(args=None):
