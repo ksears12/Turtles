@@ -79,7 +79,8 @@ class TrackingNode(Node):
         # Create publisher for the control command
         self.pub_control_cmd = self.create_publisher(Twist, '/track_cmd_vel', 10)
         # Create a subscriber to the detected object pose
-        self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_object_pose', self.detected_obs_pose_callback, 10)
+        # self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_object_pose', self.detected_obs_pose_callback, 10)
+        self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_obs_pose_callback, 10)
         self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
 
         # Create timer, running at 100Hz
@@ -239,7 +240,7 @@ class TrackingNode(Node):
 
         cmd_vel = Twist()
         cmd_vel.linear.x = u_x_att+u_x_rep
-        cmd_vel.linear.y = u_y_rep
+        cmd_vel.linear.y = 0+u_y_rep
         cmd_vel.angular.z = u_z_att
         # self.get_logger().info('Transform Error: {}'.format(cmd_vel))
         return cmd_vel
