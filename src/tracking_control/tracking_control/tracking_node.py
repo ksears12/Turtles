@@ -4,6 +4,8 @@ from geometry_msgs.msg import Twist, PoseStamped
 from tf2_ros import TransformException, Buffer, TransformListener
 import numpy as np
 import math
+from sensor_msgs.msg import Image, PointCloud2
+import time
 
 ## Functions for quaternion and rotation matrix conversion
 ## The code is adapted from the general_robotics_toolbox package
@@ -83,9 +85,57 @@ class TrackingNode(Node):
         self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_obs_pose_callback, 10)
         self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
 
+        self.sub_rgb = self.create_subscription(self, Image, '/camera/color/image_raw',self.image_callback,10)
+        self.sub_depth = self.create_subscription(self, PointCloud2, '/camera/depth/points',self.depth_callback,10)
+        self.sub_d_goal_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.goal_callback, 10)
+
+        self.image_count = 0
+        self.image_time_start = 0
+        self.depth_count = 0
+        self.depth_time_start = 0
+        self.goal_count = 0
+        self.goal_time_start = 0
+
         # Create timer, running at 100Hz
         self.timer = self.create_timer(.5, self.timer_update)
     
+    def image_callback(self,msg):
+        if self.image_count < 10:
+            self.image_count += 1
+        elif self.image_count == 10:
+            self.image_time_start = time.time()
+            self.image_count += 1
+        else:
+            self.image_count += 1
+            time_elapsed = time.time()-self.image_time_start
+            self.get_logger().error('Image FPS: {}'.format(self.image_count/time_elapsed))
+        return
+
+    def depth_callback(self,msg):
+        if self.depth_count < 10:
+            self.depth_count += 1
+        elif self.depth_count == 10:
+            self.depth_time_start = time.time()
+            self.depth_count += 1
+        else:
+            self.depth_count += 1
+            time_elapsed = time.time()-self.depth_time_start
+            self.get_logger().error('Depth FPS: {}'.format(self.depth_count/time_elapsed))
+        return
+
+    def goal_callback(self,msg):
+        if self.goal_count < 10:
+            self.goal_count += 1
+        elif self.goal_count == 10:
+            self.goal_time_start = time.time()
+            self.goal_count += 1
+        else:
+            self.goal_count += 1
+            time_elapsed = time.time()-self.goal_time_start
+            self.get_logger().error('Goal FPS: {}'.format(self.goal_count/time_elapsed))
+        return
+
+
     def detected_obs_pose_callback(self, msg):
         #self.get_logger().info('Received Detected Object Pose')
         

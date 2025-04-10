@@ -111,14 +111,13 @@ class ColorObjDetectionNode(Node):
         self.pub_detected_obj_pose = self.create_publisher(PoseStamped, '/detected_color_goal_pose', 10)
         # Create a subscriber to the RGB and Depth images
         self.sub_rgb = Subscriber(self, Image, '/camera/color/image_raw')
-        self.sub_dep = Subscriber(self, Image, '/camera/depth/image_raw')
         self.sub_depth = Subscriber(self, PointCloud2, '/camera/depth/points')
         # Create a time synchronizer
-        self.ts = ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth, self.sub_dep], 10, 0.1)
+        self.ts = ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth], 10, 0.1)
         # Register the callback to the time synchronizer
         self.ts.registerCallback(self.camera_callback)
 
-    def camera_callback(self, rgb_msg, points_msg, dep_msg):
+    def camera_callback(self, rgb_msg, points_msg):
         # self.get_logger().info('Received RGB and Depth Messages')
         # get ROS parameters
         # param_color_low = np.array(self.get_parameter('color_low').value)
