@@ -4,6 +4,7 @@ from geometry_msgs.msg import Twist, PoseStamped
 from tf2_ros import TransformException, Buffer, TransformListener
 import numpy as np
 import math
+import time
 
 ## Functions for quaternion and rotation matrix conversion
 ## The code is adapted from the general_robotics_toolbox package
@@ -81,9 +82,11 @@ class TrackingNode(Node):
         # Create a subscriber to the detected object pose
         self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_object_pose', self.detected_obs_pose_callback, 10)
         self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
+        self.t1 = time.time()
+        self.t2 = time.time()
 
         # Create timer, running at 100Hz
-        self.timer = self.create_timer(0.01, self.timer_update)
+        self.timer = self.create_timer(1, self.timer_update)
     
     def detected_obs_pose_callback(self, msg):
         #self.get_logger().info('Received Detected Object Pose')
@@ -134,6 +137,9 @@ class TrackingNode(Node):
         
         # Get the detected object pose in the world frame
         self.goal_pose = cp_world
+        self.t2 = time.time()
+        self.get_logger().info('Goal Pose Computed'+str(self.t2-self.t1))
+        self.t1 = time.time()
         
     def get_current_poses(self):
         
@@ -146,7 +152,7 @@ class TrackingNode(Node):
             robot_world_y = transform.transform.translation.y
             robot_world_z = transform.transform.translation.z
             robot_world_R = q2R([transform.transform.rotation.w, transform.transform.rotation.x, transform.transform.rotation.y, transform.transform.rotation.z])
-            obstacle_pose = robot_world_R@self.obs_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
+            #obstacle_pose = robot_world_R@self.obs_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
             goal_pose = robot_world_R@self.goal_pose+np.array([robot_world_x,robot_world_y,robot_world_z])
     
         
@@ -154,7 +160,7 @@ class TrackingNode(Node):
             self.get_logger().error('Transform error: ' + str(e))
             return
         
-        return obstacle_pose, goal_pose
+        return goal_pose
     
     def timer_update(self):
         ################### Write your code here ###################
@@ -170,8 +176,10 @@ class TrackingNode(Node):
             return
         
         # Get the current object pose in the robot base_footprint frame
-        current_obs_pose, current_goal_pose = self.get_current_poses()
+        current_goal_pose = self.get_current_poses()
+        self.current_goal_pose = current_goal_pose
         
+        #self.get_logger().error('Current Goal Pose: ' + str(current_goal_pose))
         # TODO: get the control velocity command
         cmd_vel = self.controller()
         
@@ -187,9 +195,15 @@ class TrackingNode(Node):
         
         # TODO: Update the control velocity command
         cmd_vel = Twist()
-        cmd_vel.linear.x = 0
-        cmd_vel.linear.y = 0
-        cmd_vel.angular.z = 0
+        cmd_vel.linear.x = self.current_goal_pose[2]-.5
+        cmd_vel.linear.y = 0.0
+        if self.current_goal_pose[2] > .6:
+            cmd_vel.angular.z = math.atan2(-self.current_goal_pose[0],self.current_goal_pose[2])
+            if cmd_vel.angular.z < -.7:
+                cmd_vel.linear.x = 0.0
+                cmd_vel.angular.z = 0.0
+        else:
+            cmd_vel.angular.z = 0.0
         return cmd_vel
     
         ############################################
