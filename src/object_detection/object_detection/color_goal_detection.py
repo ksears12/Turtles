@@ -118,6 +118,7 @@ class ColorObjDetectionNode(Node):
 
         self.last_image_exists = False
         self.show_images = False
+        self.override_color_finding = False
         # Create a time synchronizer
         #self.ts = ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth], 10, 0.1)
         #self.ts = ApproximateTimeSynchronizer([self.sub_rgb, self.sub_depth],5,.01)
@@ -148,6 +149,12 @@ class ColorObjDetectionNode(Node):
                     self.param_color_low = np.array([129., 106., 27.])
 
                     self.param_color_high = np.array([147., 173., 66.])
+
+                    self.param_color_low = np.array([0., 150., 50.])
+
+                    self.param_color_high = np.array([100., 255., 255.])
+                    if self.override_color_finding:
+                        self.searching = True
                     if self.show_images:
                         # Greyscale Area Image
                         # plt.imshow(im_age1,'gray')
@@ -444,7 +451,7 @@ class ColorObjDetectionNode(Node):
                 #plt.savefig('rgb_image_rect_goal.png')
                 #plt.close()
 
-                if True:
+                if self.show_images:
                     ##All Detected Goal objects
                     plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
                     plt.savefig('0rgb_image_rect_goal' + str(self.count)+'.png')

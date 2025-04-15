@@ -82,6 +82,11 @@ class TrackingNode(Node):
         # Create a subscriber to the detected object pose
         self.sub_detected_goal_pose = self.create_subscription(PoseStamped, 'detected_color_object_pose', self.detected_obs_pose_callback, 10)
         self.sub_detected_obs_pose = self.create_subscription(PoseStamped, 'detected_color_goal_pose', self.detected_goal_pose_callback, 10)
+
+        #Get Images of Current Goal
+        self.sub_detected_goal_image = self.create_subscription(PoseStamped, 'detected_color_goal', self.get_goal_img_callback, 10)
+        
+        
         self.t1 = time.time()
         self.t2 = time.time()
 
@@ -140,6 +145,14 @@ class TrackingNode(Node):
         self.t2 = time.time()
         self.get_logger().info('Goal Pose Computed'+str(self.t2-self.t1))
         self.t1 = time.time()
+
+    def get_goal_img_callback(self, msg):
+        import matplotlib.pyplot as plt
+        import cv2
+        rgb_image = self.br.imgmsg_to_cv2(msg,"bgr8")
+        plt.imshow(cv2.cvtColor(rgb_image, cv2.COLOR_BGR2RGB))
+        plt.savefig('0rgb_image_rect_goal' + str(self.count)+'.png')
+        plt.close()
         
     def get_current_poses(self):
         
